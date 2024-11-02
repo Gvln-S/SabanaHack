@@ -1,0 +1,13 @@
+# VS Code
+.vscode/
+*.code-workspace
+
+# virtual poetry 
+.venv/
+
+# Python temp
+__pycache__/
+*.py[cod]
+*$py.class
+
+
