@@ -1,4 +1,3 @@
-import pandas as pd
+from dataLoader.excel_loader import excelData
 
-datos = pd.read_excel("./sources/data.xlsx", header = None)
-print(datos.head())
+excelData()
