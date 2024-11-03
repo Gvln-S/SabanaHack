@@ -15,7 +15,7 @@ def ExcelData():
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
 
         # index = index of each word, studyWord = all words in the array
-        nodule = Nodule("Null", "Null", "Null")
+        nodule = Nodule("Null", "Null", "Null", "Null", "Null", "Null")
         for index, studyWord in enumerate(studyArray):
 
             if Nodule.noduleStateList[0] in studyWord:
@@ -25,31 +25,42 @@ def ExcelData():
                 beforeText = " ".join(before)
                 afterText = " ".join(after)
                 if any(neg in beforeText for neg in Nodule.noduleNegationBefore):
-                    nodule = Nodule("No", "No", "No")
+                    nodule = Nodule("No", "No", "No", "No", "No", "No")
                 elif (any(conf in beforeText for conf in Nodule.noduleConfirmationBefore) or 
                     any(conf in afterText for conf in Nodule.noduleConfirmationAfter)):
                     foundMorphology = next((morph for morph in Nodule.noduleMorphology if morph in studyArray), None)
+                    foundMargin = next((margin for margin in Nodule.noduleMargin if margin in studyArray), None)
+                    foundDensity = next((density for density in Nodule.noduleDensity if density in studyArray), None)
+                    foundMicroCal = next((density for density in Nodule.noduleMicroCal if density in studyArray), None)
+                    foundBenign = next((benign for benign in Nodule.noduleBenign if benign in studyArray), None)
                     if foundMorphology:
-                        nodule = Nodule("Yes", foundMorphology, "Null")
-                        foundMargin = next((margin for margin in Nodule.noduleMargin if margin in studyArray), None)
+                        nodule = Nodule("Yes", foundMorphology, "Null", "Null", "No", "Null")
                         if foundMargin:
-                            nodule = Nodule("Yes", foundMorphology, foundMargin)
-
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, "Null", "No", "Null") 
+                        if foundDensity:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "No", "Null")
+                        if foundMicroCal:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", "Null")
+                        if foundBenign:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", foundBenign)
                     else:
-                        nodule = Nodule("Yes", "Null", "Null") 
-        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology, nodule.margin))
+                        nodule = Nodule("Yes", "Null", "Null", "Null", "No", "Null") 
+        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology, nodule.margin, nodule.density, nodule.microCal, nodule.benign))
     return table_data    
 
 
 def create_table():
     root = tk.Tk()
     root.title("Datos estructurados")
-    root.geometry("700x800")
-    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology", "Margin"), show="headings")
+    root.geometry("1500x600")
+    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology", "Margin", "Density", "Microcalcificaciones", "Benigno"), show="headings")
     tree.heading("ID", text="ID")
     tree.heading("Nodulo", text="Nodulo")
     tree.heading("Morphology", text="Monrphology")
     tree.heading("Margin", text="Margin")
+    tree.heading("Density", text="Density")
+    tree.heading("Microcalcificaciones", text="Microcalcificaciones")
+    tree.heading("Benigno", text="Benigno")
     data = ExcelData()
     for row in data:
         tree.insert("", "end", values=row)
