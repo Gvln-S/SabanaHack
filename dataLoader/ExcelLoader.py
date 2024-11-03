@@ -17,7 +17,7 @@ def ExcelData():
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
 
         # index = index of each word, studyWord = all words in the array
-        nodule = Nodule("Null", "Null")
+        nodule = Nodule("Null", "Null", "Null", "Null", "Null", "Null")
         for index, studyWord in enumerate(studyArray):
 
             if Nodule.noduleStateList[0] in studyWord:
@@ -27,25 +27,35 @@ def ExcelData():
                 beforeText = " ".join(before)
                 afterText = " ".join(after)
                 if any(neg in beforeText for neg in Nodule.noduleNegationBefore):
-                    nodule = Nodule("No", "Null")
+                    nodule = Nodule("No", "No", "No", "No", "No", "No")
                 elif (any(conf in beforeText for conf in Nodule.noduleConfirmationBefore) or 
                     any(conf in afterText for conf in Nodule.noduleConfirmationAfter)):
-                    found_morphology = next((morph for morph in Nodule.noduleMorphologyAfter if morph in studyArray), None)
-            
-                    if found_morphology:
-                        nodule = Nodule("Yes", found_morphology)
+                    foundMorphology = next((morph for morph in Nodule.noduleMorphology if morph in studyArray), None)
+                    foundMargin = next((margin for margin in Nodule.noduleMargin if margin in studyArray), None)
+                    foundDensity = next((density for density in Nodule.noduleDensity if density in studyArray), None)
+                    foundMicroCal = next((density for density in Nodule.noduleMicroCal if density in studyArray), None)
+                    foundBenign = next((benign for benign in Nodule.noduleBenign if benign in studyArray), None)
+                    if foundMorphology:
+                        nodule = Nodule("Yes", foundMorphology, "Null", "Null", "No", "Null")
+                        if foundMargin:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, "Null", "No", "Null") 
+                        if foundDensity:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "No", "Null")
+                        if foundMicroCal:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", "Null")
+                        if foundBenign:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", foundBenign)
                     else:
-                        nodule = Nodule("Yes", "Null") 
-        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology))
+                        nodule = Nodule("Yes", "Null", "Null", "Null", "No", "Null") 
+        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology, nodule.margin, nodule.density, nodule.microCal, nodule.benign))
     return table_data    
 
 
 def create_table_and_chart():
     root = tk.Tk()
-    root.title("Datos Estructurados")
-    root.geometry("700x500")
+    root.title("Datos estructurados")
+    root.geometry("1500x600")
 
-    # Crear y configurar el estilo
     style = ttk.Style()
     style.configure("Treeview",
                     background="lightgrey",
@@ -56,41 +66,36 @@ def create_table_and_chart():
               background=[("selected", "blue")],
               foreground=[("selected", "white")])
 
-    # Crear la tabla
-    tree = ttk.Treeview(root, columns=("ID", "Nodulo", "Morphology"), show="headings")
+
+    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology", "Margin", "Density", "Microcalcificaciones", "Benigno"), show="headings")
     tree.heading("ID", text="ID")
     tree.heading("Nodulo", text="Nodulo")
-    tree.heading("Morphology", text="Morphology")
-
-    # Llenar la tabla con datos
-    data = ExcelData()  # Asegúrate de que esta función esté definida y retorne datos válidos
+    tree.heading("Morphology", text="Monrphology")
+    tree.heading("Margin", text="Margin")
+    tree.heading("Density", text="Density")
+    tree.heading("Microcalcificaciones", text="Microcalcificaciones")
+    tree.heading("Benigno", text="Benigno")
+    data = ExcelData()
     for row in data:
         tree.insert("", "end", values=row)
 
-    # Ajustar el ancho de las columnas
     tree.column("ID", width=100, anchor='center')
     tree.column("Nodulo", width=200, anchor='w')
     tree.column("Morphology", width=200, anchor='w')
 
-    # Empaquetar el Treeview
     tree.pack(expand=True, fill="both")
 
-    # Contar nodulos "Sí" y "No"
     count_si = sum(1 for row in data if row[1] == "Sí")
     count_no = sum(1 for row in data if row[1] == "No")
 
-    # Crear la gráfica de barras
     fig, ax = plt.subplots()
     ax.bar(['Sí', 'No'], [count_si, count_no], color=['green', 'red'])
     ax.set_ylabel('Cantidad de Nódulos')
     ax.set_title('Comparación de Nódulos: Sí vs No')
 
-    # Integrar la gráfica de barras en la interfaz
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-    # Ejecutar el bucle principal de la interfaz gráfica
     root.mainloop()
-
 create_table_and_chart()
