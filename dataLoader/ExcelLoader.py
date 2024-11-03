@@ -13,7 +13,6 @@ def ExcelData():
 
     for row in range(1, 950):
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
-        print(data.iloc[row, 0], end=' | ')
 
         # index = index of each word, studyWord = all words in the array
         nodule = Nodule("Null", "Null")
