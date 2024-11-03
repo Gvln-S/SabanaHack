@@ -99,5 +99,5 @@ Nuestro nivel de desarrollo actual en base a nuestra solución se categorizaría
 [MedData Repository](https://github.com/Gvln-S/SabanaHack.git)
 
 ## Link Presentación MedData.pdf
-[Presentación](https://github.com/Gvln-S/SabanaHack/tree/main)
+[Presentación](MedData.pdf)
 
