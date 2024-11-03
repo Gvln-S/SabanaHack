@@ -25,12 +25,14 @@ def ExcelData():
 
                 beforeText = " ".join(before)
                 afterText = " ".join(after)
-                if 'no hay' in beforeText:
+                if any(neg in beforeText for neg in Nodule.noduleNegationBefore):
                     nodule = Nodule("No", "Null")
-                elif 'si hay' in beforeText or 'hay otro' in beforeText or 'cordenada' in afterText:
-                    nodule = Nodule("Yes", "Null")
-                    if "ovalado" in afterText or "redondo" in afterText or "irregular" in afterText:
-                        nodule = Nodule("Yes", "Hay morfologia") 
+                elif (any(conf in beforeText for conf in Nodule.noduleConfirmationBefore) or 
+                    any(conf in afterText for conf in Nodule.noduleConfirmationAfter)):
+                    found_morphology = next((morph for morph in Nodule.noduleMorphologyAfter if morph in studyArray), None)
+            
+                    if found_morphology:
+                        nodule = Nodule("Yes", found_morphology)
                     else:
                         nodule = Nodule("Yes", "Null") 
         table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology))

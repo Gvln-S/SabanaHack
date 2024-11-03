@@ -1,5 +1,9 @@
 class Nodule:
     noduleStateList = ["nodulo"]
+    noduleNegationBefore=["no hay"]
+    noduleConfirmationBefore=["si hay", "hay otro"]
+    noduleConfirmationAfter=["cordenada"]
+    noduleMorphologyAfter = ["ovalado", "ovalada", "irregular" , "redondo"]
 
     def __init__(self, containsNodule, morphology):
         self.containsNodule = containsNodule
