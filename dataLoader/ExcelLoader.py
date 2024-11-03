@@ -15,7 +15,7 @@ def ExcelData():
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
 
         # index = index of each word, studyWord = all words in the array
-        nodule = Nodule("Null", "Null")
+        nodule = Nodule("Null", "Null", "Null")
         for index, studyWord in enumerate(studyArray):
 
             if Nodule.noduleStateList[0] in studyWord:
@@ -25,27 +25,31 @@ def ExcelData():
                 beforeText = " ".join(before)
                 afterText = " ".join(after)
                 if any(neg in beforeText for neg in Nodule.noduleNegationBefore):
-                    nodule = Nodule("No", "Null")
+                    nodule = Nodule("No", "No", "No")
                 elif (any(conf in beforeText for conf in Nodule.noduleConfirmationBefore) or 
                     any(conf in afterText for conf in Nodule.noduleConfirmationAfter)):
-                    found_morphology = next((morph for morph in Nodule.noduleMorphologyAfter if morph in studyArray), None)
-            
-                    if found_morphology:
-                        nodule = Nodule("Yes", found_morphology)
+                    foundMorphology = next((morph for morph in Nodule.noduleMorphology if morph in studyArray), None)
+                    if foundMorphology:
+                        nodule = Nodule("Yes", foundMorphology, "Null")
+                        foundMargin = next((margin for margin in Nodule.noduleMargin if margin in studyArray), None)
+                        if foundMargin:
+                            nodule = Nodule("Yes", foundMorphology, foundMargin)
+
                     else:
-                        nodule = Nodule("Yes", "Null") 
-        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology))
+                        nodule = Nodule("Yes", "Null", "Null") 
+        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology, nodule.margin))
     return table_data    
 
 
 def create_table():
     root = tk.Tk()
     root.title("Datos estructurados")
-    root.geometry("500x400")
-    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology"), show="headings")
+    root.geometry("700x800")
+    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology", "Margin"), show="headings")
     tree.heading("ID", text="ID")
     tree.heading("Nodulo", text="Nodulo")
     tree.heading("Morphology", text="Monrphology")
+    tree.heading("Margin", text="Margin")
     data = ExcelData()
     for row in data:
         tree.insert("", "end", values=row)
