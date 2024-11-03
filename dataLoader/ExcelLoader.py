@@ -13,48 +13,55 @@ def ExcelData():
 
     studyColum = 3
 
-    for row in range(1, 950):
+    for row in range(1, 1400):
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
-
         # index = index of each word, studyWord = all words in the array
-        nodule = Nodule("Null", "Null", "Null", "Null", "Null", "Null")
+        nodule = Nodule("Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown")
         for index, studyWord in enumerate(studyArray):
-
-            if Nodule.noduleStateList[0] in studyWord:
-                before = studyArray[max(0, index - 3):index]
+            if Nodule.noduleStateList[0] in studyWord or Nodule.noduleStateList[1] in studyWord:
+                before = studyArray[max(0, index - 9):index]
                 after = studyArray[index + 1:min(len(studyArray), index + 4)]
 
                 beforeText = " ".join(before)
                 afterText = " ".join(after)
-                if any(neg in beforeText for neg in Nodule.noduleNegationBefore):
-                    nodule = Nodule("No", "No", "No", "No", "No", "No")
-                elif (any(conf in beforeText for conf in Nodule.noduleConfirmationBefore) or 
+                if (any(conf in beforeText for conf in Nodule.noduleConfirmationBefore) or 
                     any(conf in afterText for conf in Nodule.noduleConfirmationAfter)):
                     foundMorphology = next((morph for morph in Nodule.noduleMorphology if morph in studyArray), None)
                     foundMargin = next((margin for margin in Nodule.noduleMargin if margin in studyArray), None)
                     foundDensity = next((density for density in Nodule.noduleDensity if density in studyArray), None)
                     foundMicroCal = next((density for density in Nodule.noduleMicroCal if density in studyArray), None)
                     foundBenign = next((benign for benign in Nodule.noduleBenign if benign in studyArray), None)
+                    foundBiradIndex = next((i for i, word in enumerate(studyArray) if word in Nodule.noduleBirad), None)
                     if foundMorphology:
-                        nodule = Nodule("Yes", foundMorphology, "Null", "Null", "No", "Null")
-                        if foundMargin:
-                            nodule = Nodule("Yes", foundMorphology, foundMargin, "Null", "No", "Null") 
-                        if foundDensity:
-                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "No", "Null")
-                        if foundMicroCal:
-                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", "Null")
-                        if foundBenign:
-                            nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", foundBenign)
+                        nodule = Nodule("Yes", foundMorphology, "Null", "Null", "No", "Null", "Null")
+                    if foundMargin:
+                        nodule = Nodule("Yes", foundMorphology, foundMargin, "Null", "No", "Null", "Null") 
+                    if foundDensity:
+                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Null", "Null", "Null")
+                    if foundMicroCal:
+                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", "Null", "Null")
+                    if foundBenign:
+                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", foundBenign, "Null")
+                    if foundBiradIndex is not None and foundBiradIndex + 1 < len(studyArray):
+                        foundBiradNext = studyArray[foundBiradIndex + 1]
+                        foundBiradNext = foundBiradNext.split(",")[0].split(".")[0].split(":")[0]
+                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", foundBenign, foundBiradNext)
                     else:
-                        nodule = Nodule("Yes", "Null", "Null", "Null", "No", "Null") 
-        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology, nodule.margin, nodule.density, nodule.microCal, nodule.benign))
+                        nodule = Nodule("Yes", "Null", "Null", "Null", "No", "Null", "Null") 
+                elif any(neg in beforeText for neg in Nodule.noduleNegationBefore):
+                    foundBiradIndex = next((i for i, word in enumerate(studyArray) if word in Nodule.noduleBirad), None)
+                    if foundBiradIndex is not None and foundBiradIndex + 1 < len(studyArray):
+                        foundBiradNext = studyArray[foundBiradIndex + 1]
+                        foundBiradNext = foundBiradNext.split(",")[0].split(".")[0].split(":")[0]
+                        nodule = Nodule("No", "No", "No", "No", "No", "No", foundBiradNext)                   
+        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology, nodule.margin, nodule.density, nodule.microCal, nodule.benign, nodule.birad))
     return table_data    
 
 
 def create_table_and_chart():
     root = tk.Tk()
     root.title("Datos estructurados")
-    root.geometry("1500x600")
+    root.geometry("1700x1000")
 
     style = ttk.Style()
     style.configure("Treeview",
@@ -67,7 +74,7 @@ def create_table_and_chart():
               foreground=[("selected", "white")])
 
 
-    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology", "Margin", "Density", "Microcalcificaciones", "Benigno"), show="headings")
+    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology", "Margin", "Density", "Microcalcificaciones", "Benigno", "BIRAD"), show="headings")
     tree.heading("ID", text="ID")
     tree.heading("Nodulo", text="Nodulo")
     tree.heading("Morphology", text="Monrphology")
@@ -75,6 +82,7 @@ def create_table_and_chart():
     tree.heading("Density", text="Density")
     tree.heading("Microcalcificaciones", text="Microcalcificaciones")
     tree.heading("Benigno", text="Benigno")
+    tree.heading("BIRAD", text="BIRAD")
     data = ExcelData()
     for row in data:
         tree.insert("", "end", values=row)
@@ -85,7 +93,7 @@ def create_table_and_chart():
 
     tree.pack(expand=True, fill="both")
 
-    count_si = sum(1 for row in data if row[1] == "Sí")
+    count_si = sum(1 for row in data if row[1] == "Yes")
     count_no = sum(1 for row in data if row[1] == "No")
 
     fig, ax = plt.subplots()
@@ -97,5 +105,9 @@ def create_table_and_chart():
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
+    root.protocol("WM_DELETE_WINDOW", root.quit)
+
     root.mainloop()
+    root.destroy()
+
 create_table_and_chart()
