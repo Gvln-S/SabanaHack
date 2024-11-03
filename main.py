@@ -1,3 +1,3 @@
-from dataLoader.excel_loader import excelData
+from findings.StudyFindings import findings 
 
-excelData()
+findings()
