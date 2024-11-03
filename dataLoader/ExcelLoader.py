@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas 
 import tkinter as tk
 from tkinter import ttk
 from unidecode import unidecode
@@ -7,6 +7,7 @@ from findings.Nodule import Nodule
 def ExcelData():
     data = pandas.read_excel("./sources/data.xlsx", header = None)
     lastRow = data.last_valid_index()
+    table_data=[]
 
     studyColum = 3
 
@@ -32,7 +33,8 @@ def ExcelData():
                         nodule = Nodule("Yes", "Hay morfologia") 
                     else:
                         nodule = Nodule("Yes", "Null") 
-        print(nodule)
+        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology))
+    return table_data    
 
 
 def create_table():
