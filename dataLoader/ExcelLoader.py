@@ -5,6 +5,7 @@ from unidecode import unidecode
 from findings.Nodule import Nodule
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import time
 
 def ExcelData():
     data = pandas.read_excel("./sources/data.xlsx", header = None)
@@ -13,7 +14,7 @@ def ExcelData():
 
     studyColum = 3
 
-    for row in range(1, 1400):
+    for row in range(1, 15000):
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
         # index = index of each word, studyWord = all words in the array
         nodule = Nodule("Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown")
@@ -73,6 +74,7 @@ def create_table_and_chart():
               background=[("selected", "blue")],
               foreground=[("selected", "white")])
 
+    start_time = time.time()
 
     tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology", "Margin", "Density", "Microcalcificaciones", "Benigno", "BIRAD"), show="headings")
     tree.heading("ID", text="ID")
@@ -104,6 +106,11 @@ def create_table_and_chart():
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    print(f"Tiempo para mostrar los datos: {elapsed_time:.2f} segundos")
 
     root.protocol("WM_DELETE_WINDOW", root.quit)
 
