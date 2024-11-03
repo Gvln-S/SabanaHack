@@ -1,6 +1,6 @@
-from findings.StudyFindings import findings 
+from dataLoader.ExcelLoader import excelData
 
-findings()
+excelData()
 
 
 
