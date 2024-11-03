@@ -16,7 +16,7 @@ Nuestro nivel de desarrollo actual en base a nuestra solución se categorizaría
 2. **Automatización Eficiente**: El sistema transforma grandes volúmenes de datos no estructurados en visualizaciones organizadas de manera automática, mejorando significativamente la eficiencia en la gestión de la información clínica.
 3. **Mejora de la Calidad de los Datos**: Al estructurar y limpiar automáticamente los datos, nuestro algoritmo reduce errores y garantiza que la información almacenada sea precisa y coherente, facilitando una mejor toma de decisiones y análisis.
 
-## Desventajas o debilidades de nuestra propuesta ❌❌❌
+## Desventajas o debilidades de nuestra propuesta ❌
 1. **Adaptabilidad Limitada Inicialmente**: Puede requerir ajustes adicionales para manejar diferentes tipos de datos no estructurados que no se encuentran inicialmente previstos.
 2. **Costos de Mantenimiento**: Requiere un equipo dedicado para el mantenimiento continuo y las actualizaciones del sistema, lo cual puede implicar costos adicionales a largo plazo.
 
@@ -96,10 +96,8 @@ Nuestro nivel de desarrollo actual en base a nuestra solución se categorizaría
 
 
 ## Repositorio del proyecto
-```bash
-https://github.com/Gvln-S/SabanaHack.git
-```
+[MedData Repository](https://github.com/Gvln-S/SabanaHack.git)
+
 ## Link Presentación MedData.pdf
- ```bash
-https://github.com/Gvln-S/SabanaHack/tree/main
- ```
+[Presentación](https://github.com/Gvln-S/SabanaHack/tree/main)
+
