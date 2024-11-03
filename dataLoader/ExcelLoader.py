@@ -10,10 +10,11 @@ def excelData():
 
     studyColum = 3
 
-    for row in range(1, 3):
+    for row in range(63, 66):
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
         studyArrayList.append(studyArray)
-               
+        print(data.iloc[row,0]) 
+
     return studyArrayList
 
 
