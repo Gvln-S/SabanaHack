@@ -1,62 +1,103 @@
-import pandas 
+import pandas as pd
 import tkinter as tk
 from tkinter import ttk
 from unidecode import unidecode
 from findings.Nodule import Nodule
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from typing import Optional, List, Tuple
+from findings.Nodule import Nodule, NoduleConfig
 
-def ExcelData():
-    data = pandas.read_excel("./sources/data.xlsx", header = None)
-    lastRow = data.last_valid_index()
-    table_data=[]
+class NoduleAnalyzer:
+    def __init__(self, config: NoduleConfig = NoduleConfig()):
+        self.config = config
+    
+    def find_attribute(self, words: List[str], attributes: List[str]) -> Optional[str]:
+        """Busca un atributo específico en la lista de palabras"""
+        return next((word for word in words if word in attributes), None)
+    
+    def extract_birad(self, words: List[str], index: Optional[int]) -> Optional[str]:
+        if index is None:
+            return None
+            
+        if index + 1 < len(words):
+            next_word = words[index + 1]
+            return next_word.split(",")[0].split(".")[0].split(":")[0].split(")")[0].split("m")[0]
+        return None
 
-    studyColum = 3
+    def analyze_text(self, text: str) -> Nodule:
+        words = [unidecode(word).lower() for word in text.split()]
+        nodule = Nodule()
+        
+        for i, word in enumerate(words):
+            if any(state in word for state in self.config.STATES):
+                before = " ".join(words[max(0, i - 9):i])
+                after = " ".join(words[i + 1:min(len(words), i + 4)])
+                
+                if self._is_nodule_confirmed(before, after):
+                    nodule = self._process_confirmed_nodule(words)
+                elif any(neg in before for neg in self.config.NEGATION_BEFORE):
+                    nodule = self._process_negative_nodule(words)
+                    
+        return nodule
 
-    for row in range(1, 1400):
-        studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
-        # index = index of each word, studyWord = all words in the array
-        nodule = Nodule("Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown")
-        for index, studyWord in enumerate(studyArray):
-            if Nodule.noduleStateList[0] in studyWord or Nodule.noduleStateList[1] in studyWord:
-                before = studyArray[max(0, index - 9):index]
-                after = studyArray[index + 1:min(len(studyArray), index + 4)]
+    def _is_nodule_confirmed(self, before: str, after: str) -> bool:
+        return (any(conf in before for conf in self.config.CONFIRMATION_BEFORE) or
+                any(conf in after for conf in self.config.CONFIRMATION_AFTER))
 
-                beforeText = " ".join(before)
-                afterText = " ".join(after)
-                if (any(conf in beforeText for conf in Nodule.noduleConfirmationBefore) or 
-                    any(conf in afterText for conf in Nodule.noduleConfirmationAfter)):
-                    foundMorphology = next((morph for morph in Nodule.noduleMorphology if morph in studyArray), None)
-                    foundMargin = next((margin for margin in Nodule.noduleMargin if margin in studyArray), None)
-                    foundDensity = next((density for density in Nodule.noduleDensity if density in studyArray), None)
-                    foundMicroCal = next((density for density in Nodule.noduleMicroCal if density in studyArray), None)
-                    foundBenign = next((benign for benign in Nodule.noduleBenign if benign in studyArray), None)
-                    foundBiradIndex = next((i for i, word in enumerate(studyArray) if word in Nodule.noduleBirad), None)
-                    if foundMorphology:
-                        nodule = Nodule("Yes", foundMorphology, "Null", "Null", "No", "Null", "Null")
-                    if foundMargin:
-                        nodule = Nodule("Yes", foundMorphology, foundMargin, "Null", "No", "Null", "Null") 
-                    if foundDensity:
-                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Null", "Null", "Null")
-                    if foundMicroCal:
-                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", "Null", "Null")
-                    if foundBenign:
-                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", foundBenign, "Null")
-                    if foundBiradIndex is not None and foundBiradIndex + 1 < len(studyArray):
-                        foundBiradNext = studyArray[foundBiradIndex + 1]
-                        foundBiradNext = foundBiradNext.split(",")[0].split(".")[0].split(":")[0]
-                        nodule = Nodule("Yes", foundMorphology, foundMargin, foundDensity, "Yes", foundBenign, foundBiradNext)
-                    else:
-                        nodule = Nodule("Yes", "Null", "Null", "Null", "No", "Null", "Null") 
-                elif any(neg in beforeText for neg in Nodule.noduleNegationBefore):
-                    foundBiradIndex = next((i for i, word in enumerate(studyArray) if word in Nodule.noduleBirad), None)
-                    if foundBiradIndex is not None and foundBiradIndex + 1 < len(studyArray):
-                        foundBiradNext = studyArray[foundBiradIndex + 1]
-                        foundBiradNext = foundBiradNext.split(",")[0].split(".")[0].split(":")[0]
-                        nodule = Nodule("No", "No", "No", "No", "No", "No", foundBiradNext)                   
-        table_data.append((data.iloc[row, 0], nodule.containsNodule, nodule.morphology, nodule.margin, nodule.density, nodule.microCal, nodule.benign, nodule.birad))
-    return table_data    
+    def _process_confirmed_nodule(self, words: List[str]) -> Nodule:
+        nodule = Nodule(contains_nodule="Yes")
+        
+        morphology = self.find_attribute(words, self.config.MORPHOLOGY)
+        margin = self.find_attribute(words, self.config.MARGIN)
+        density = self.find_attribute(words, self.config.DENSITY)
+        micro_cal = self.find_attribute(words, self.config.MICRO_CAL)
+        benign = self.find_attribute(words, self.config.BENIGN)
+        
+        birad_index = next((i for i, word in enumerate(words) 
+                           if word in self.config.BIRAD), None)
+        birad = self.extract_birad(words, birad_index)
+        
+        if morphology: nodule.morphology = morphology
+        if margin: nodule.margin = margin
+        if density: nodule.density = density
+        if micro_cal: nodule.micro_cal = "Yes"
+        if benign: nodule.benign = benign
+        if birad: nodule.birad = birad
+        
+        return nodule
 
+    def _process_negative_nodule(self, words: List[str]) -> Nodule:
+        """Procesa un caso donde se niega la presencia de un nódulo"""
+        birad_index = next((i for i, word in enumerate(words) 
+                           if word in self.config.BIRAD), None)
+        birad = self.extract_birad(words, birad_index)
+        
+        return Nodule(
+            contains_nodule="No",
+            morphology="No",
+            margin="No",
+            density="No",
+            micro_cal="No",
+            benign="No",
+            birad=birad if birad else "No"
+        )
+
+def process_excel_data(file_path: str, study_column: int = 3) -> List[Tuple]:
+    data = pd.read_excel(file_path, header=None)
+    analyzer = NoduleAnalyzer()
+    table_data = []
+    
+    for row in range(1, 15001):
+        study_text = data.iloc[row, study_column]
+        nodule = analyzer.analyze_text(study_text)
+        
+        table_data.append((
+            data.iloc[row, 0],
+            *nodule.to_tuple()
+        ))
+    
+    return table_data
 
 def create_table_and_chart():
     root = tk.Tk()
@@ -83,8 +124,9 @@ def create_table_and_chart():
     tree.heading("Microcalcificaciones", text="Microcalcificaciones")
     tree.heading("Benigno", text="Benigno")
     tree.heading("BIRAD", text="BIRAD")
-    data = ExcelData()
-    for row in data:
+    file_path = "./sources/data.xlsx"
+    results = process_excel_data(file_path)
+    for row in results:
         tree.insert("", "end", values=row)
 
     tree.column("ID", width=100, anchor='center')
@@ -93,8 +135,8 @@ def create_table_and_chart():
 
     tree.pack(expand=True, fill="both")
 
-    count_si = sum(1 for row in data if row[1] == "Yes")
-    count_no = sum(1 for row in data if row[1] == "No")
+    count_si = sum(1 for row in results if row[1] == "Yes")
+    count_no = sum(1 for row in results if row[1] == "No")
 
     fig, ax = plt.subplots()
     ax.bar(['Sí', 'No'], [count_si, count_no], color=['green', 'red'])
