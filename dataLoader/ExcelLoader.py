@@ -1,5 +1,6 @@
-import pandas 
-
+import pandas as pd
+import tkinter as tk
+from tkinter import ttk
 from unidecode import unidecode
 from findings.Nodule import Nodule
 
@@ -34,4 +35,19 @@ def ExcelData():
         print(nodule)
 
 
+def create_table():
+    root = tk.Tk()
+    root.title("Datos estructurados")
+    root.geometry("500x400")
+    tree = ttk.Treeview(root, columns=("ID", "Nodulo","Morphology"), show="headings")
+    tree.heading("ID", text="ID")
+    tree.heading("Nodulo", text="Nodulo")
+    tree.heading("Morphology", text="Monrphology")
+    data = ExcelData()
+    for row in data:
+        tree.insert("", "end", values=row)
 
+    tree.pack(expand=True, fill="both")
+    root.mainloop()
+
+create_table()
