@@ -1,14 +1,13 @@
 class Nodule:
-    noduleList = ["nodulo"]
+    noduleStateList = ["nodulo"]
+    noduleMorphologyList = ["ovalado", "redondo", "irregular"]
 
-    noduleListValue = ["si hay", "no hay"]
-
-    def __init__(self, containsNodule, morfologia):
+    def __init__(self, containsNodule, morphology):
         self.containsNodule = containsNodule
-        self.morfologia = morfologia 
+        self.morphology = morphology
 
     def __str__(self):
-        return f"Nodule: {self.containsNodule}"
+        return f"Nodule: {self.containsNodule}" f" Morphology: {self.morphology}"
 
 
 

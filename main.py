@@ -1,6 +1,6 @@
-from dataLoader.ExcelLoader import excelData
+from dataLoader.ExcelLoader import ExcelData
 
-excelData()
+ExcelData()
 
 
 

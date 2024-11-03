@@ -3,42 +3,34 @@ import pandas
 from unidecode import unidecode
 from findings.Nodule import Nodule
 
-def excelData():
+def ExcelData():
     data = pandas.read_excel("./sources/data.xlsx", header = None)
     lastRow = data.last_valid_index()
 
-    studyArrayList = []
-
     studyColum = 3
 
-    for row in range(0, 100):
+    for row in range(1, 10):
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
+        print(data.iloc[row, 0], end=' | ')
 
-            # index = index of each word, studyWord = all words in the array
+        # index = index of each word, studyWord = all words in the array
         for index, studyWord in enumerate(studyArray):
+            if Nodule.noduleStateList[0] in studyWord:
                 before = studyArray[max(0, index - 3):index]
                 after = studyArray[index + 1:min(len(studyArray), index + 4)]
 
-                if Nodule.noduleList[0] in studyWord:
-                    beforeText = " ".join(before)
-                
-
-                    if  'no hay' in beforeText:
-                        nodule = Nodule("No", "")
-                        print(data.iloc[row, 0], end=' | ')
-                        print(nodule)
-                    
-                    
-                    elif 'si hay' in beforeText:
-                        nodule = Nodule("Yes", "")
-                        print(data.iloc[row, 0], end=' | ')
-                        print(nodule)
-
-
-
-
-
-
+                nodule = Nodule("Null", "Null")
+#               beforeText = " ".join(before)
+                if 'no' in before:
+                    nodule = Nodule("No", "Null")
+                elif 'si' in before:
+                    nodule = Nodule("Si", "Null")
+                    for noduleMorphology in Nodule.noduleMorphologyList:
+                        if noduleMorphology in studyWord:
+                            nodule = Nodule("Yes", noduleMorphology) 
+                        else:
+                            nodule = Nodule("Yes", "Null") 
+                print(nodule)
 
 
 
