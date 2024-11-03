@@ -9,7 +9,7 @@ def ExcelData():
 
     studyColum = 3
 
-    for row in range(1, 50):
+    for row in range(1, 950):
         studyArray = [ unidecode(word).lower() for word in data.iloc[row, studyColum].split() ]
         print(data.iloc[row, 0], end=' | ')
 
@@ -21,16 +21,16 @@ def ExcelData():
                 before = studyArray[max(0, index - 3):index]
                 after = studyArray[index + 1:min(len(studyArray), index + 4)]
 
-#               beforeText = " ".join(before)
-                if 'no' in before:
+                beforeText = " ".join(before)
+                afterText = " ".join(after)
+                if 'no hay' in beforeText:
                     nodule = Nodule("No", "Null")
-                elif 'si' in before:
-                    nodule = Nodule("Si", "Null")
-                    for noduleMorphology in Nodule.noduleMorphologyList:
-                        if noduleMorphology in studyWord:
-                            nodule = Nodule("Yes", noduleMorphology) 
-                        else:
-                            nodule = Nodule("Yes", "Null") 
+                elif 'si hay' in beforeText or 'hay otro' in beforeText or 'cordenada' in afterText:
+                    nodule = Nodule("Yes", "Null")
+                    if "ovalado" in afterText or "redondo" in afterText or "irregular" in afterText:
+                        nodule = Nodule("Yes", "Hay morfologia") 
+                    else:
+                        nodule = Nodule("Yes", "Null") 
         print(nodule)
 
 
